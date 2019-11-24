@@ -1,0 +1,315 @@
+﻿<!doctype html>
+<html lang="en">
+	<head>
+		<script src="https://code.jquery.com/jquery-3.4.1.slim.min.js" integrity="sha256-pasqAKBDmFT4eHoN2ndd6lN370kFiGUFyTiUHWhU7k8=" crossorigin=anonymous"></script>
+		<title>Mythic PDF Results</title>	
+		<style>
+
+			body {
+				font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+				text-align: center;
+			}
+			
+			.container {
+				margin-top: 10%;
+			}
+				
+			button {
+				background-color: #4CAF50; /* Green */
+				border: none;
+				color: white;
+				padding: 15px 32px;
+				text-align: center;
+				text-decoration: none;
+				display: inline-block;
+				font-size: 16px;
+			}
+
+			button:hover {
+				background-color: #57bd5b;
+			}
+
+			input[type=number] {
+				padding: 12px 20px;
+				margin: 8px 0;
+				box-sizing: border-box;
+				text-align: center;
+				-moz-appearance: textfield;
+				width: 9%;
+			}
+
+			input[type=number]:focus {
+				border: 2px solid #555;
+			}
+
+			input[type="number"]::-webkit-outer-spin-button,
+			input[type="number"]::-webkit-inner-spin-button {
+				-webkit-appearance: none;
+				margin: 0;
+			}
+			
+			.loader {
+			  display: inline-block;
+			  width: 50px;
+			  height: 50px;
+			  border: 3px solid #4CAF50;
+			  border-radius: 50%;
+			  border-top-color: #fff;
+			  animation: spin 1s ease-in-out infinite;
+			  -webkit-animation: spin 1s ease-in-out infinite;
+			  display: none;
+			}
+
+			@keyframes spin {
+			  to { -webkit-transform: rotate(360deg); }
+			}
+			@-webkit-keyframes spin {
+			  to { -webkit-transform: rotate(360deg); }
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<h1>Mythic PDF Results</h1>
+			<label for="npages">Number of pages:</label>
+			<p><input type="number" value="100" id="npages"></p>
+			<button id="generate" onclick="startGeneration()">Generate</button>
+			<div class="loader"></div>
+		</div>
+	</body>
+	<script>
+			 
+		function workerFunction() {	 
+			 
+			function focus() {
+				var r = d(100);
+				if(1 <= r && r <= 7){
+					return "Remote Event";
+				} else if(8 <= r && r <= 28){
+					return "NPC Action";
+				} else if(29 <= r && r <= 35){
+					return "Introduce a new NPC";
+				} else if(36 <= r && r <= 45){
+					return "Move towards a thread";
+				} else if(46 <= r && r <= 52){
+					return "Move away from a thread";
+				} else if(53 <= r && r <= 55){
+					return "Close a thread";
+				} else if(56 <= r && r <= 67){
+					return "PC Negative";
+				} else if(68 <= r && r <= 75){
+					return "PC Positive";
+				} else if(76 <= r && r <= 83){
+					return "Ambiguous Event";
+				}  else if(84 <= r && r <= 92){
+					return "NPC Negative";
+				}
+				return "NPC Positive";
+			}
+			
+			function alteredScene(){
+				var r = d(10);
+				var s = "Chaos factor 1";
+				if(r > 1){
+					s += '-' + r;
+				}
+				if(r % 2 == 0){
+					return s + ': Interrupt scene';
+				} else {
+					return s + ': Altered scene';
+				}
+			}
+			
+			var action1 = ["Attainment","Starting","Neglect","Fight","Recruit","Triumph","Violate","Oppose","Malice",
+					 "Communicate","Persecute","Increase","Decrease","Abandon","Gratify","Inquire","Antagonize",
+					 "Move","Waste","Truce","Expose","Haggle","Imprison","Release","Celebrate","Develop","Travel",
+					 "Block","Harm","Debase","Overindulge","Adjourn","Adversity","Kill","Disrupt","Usurp","Create",
+					 "Betray","Agree","Abuse","Excitement","Activity","Assist","Care","Negligence","Passion","Work",
+					 "Control","Attract","Failure","Pursue","Vengeance","Proceedings","Dispute","Punish","Guide",
+					 "Transform","Overthrow","Oppress","Change","Release","Befriend","Judge","Desert","Dominate",
+					 "Procrastinate","Praise","Separate","Take","Break","Heal","Delay","Stop","Lie","Return","Imitate",
+					 "Struggle","Inform","Bestow","Postpone","Oppress","Inspect","Ambush","Spy","Attach","Carry","Open",
+					 "Carelessness","Ruin","Extravagance","Trick","Arrive","Propose","Divide","Refuse","Mistrust",
+					 "Deceive","Cruelty","Intolerance","Trust"];
+					 
+			var action2 = ["Goals","Dreams","Environment","Outside","Inside","Reality","Allies","Enemies","Evil","Good",
+					 "Emotions","Opposition","War","Peace","Innocent","Love","Spirit","Intellect","Ideas","Joy",
+					 "Advice","Plot","Competition","Prison","Illness","Food","Attention","Success","Failure","Travel",
+					 "Jealousy","Dispute","Home","Investment","Suffering","Wishes","Tactics","Stalemate","Randomness",
+					 "Misfortune","Victory","Dispute","Riches","Normal","Technology","Hope","Magic","Illusions","Portals",
+					 "Danger","Weapons","Animals","Weather","Elements","Nature","Masses","Leadership","Fame","Anger",
+					 "Information","Messages","Energy","Balance","Tension","Friendship","Physical","Project","Pleasures",
+					 "Pain","Possessions","Benefits","Plans","Lies","Expectations","Legal","Bureaucracy","Business",
+					 "Path","News","Exterior","Death","Disruption","Power","Burden","Intrigues","Fears","Ambush","Rumor",
+					 "Wounds","Extravagance","Representative","Adversities","Opulence","Liberty","Military","Mundane",
+					 "Trials","Masses","Vehicle","Art"];
+					 
+			var detail1 = ["Abnormally","Adventurously","Aggressively","Angrily","Anxiously","Awkwardly","Beautifully",
+					 "Bleakly","Boldly","Bravely","Busily","Calmly","Carefully","Carelessly","Cautiously","Ceaselessly",
+					 "Cheerfully","Combatively","Coolly","Crazily","Fully","Generously","Gently","Gladly","Gracefully",
+					 "Gratefully","Happily","Hastily","Healthily","Helpfully","Helplessly","Hopelessly","Innocently",
+					 "Intensely","Interestingly","Irritatingly","Jovially","Joyfully","Judgementally","Kindly",
+					 "Peacefully","Perfectly","Playfully","Politely","Positively","Powerfully","Quaintly","Quarrelsomely",
+					 "Quietly","Roughly","Rudely","Ruthlessly","Slowly","Softly","Swiftly","Threateningly","Very","Violently",
+					 "Wildly","Yieldingly","Curiously","Daintily","Dangerously","Defiantly","Deliberately","Delightfully",
+					 "Dimly","Efficiently","Energetically","Enormously","Enthusiastically","Excitedly","Fearfully",
+					 "Ferociously","Fiercely","Foolishly","Fortunately","Frantically","Freely","Frighteningly","Kookily",
+					 "Lazily","Lightly","Loosely","Loudly","Lovingly","Loyally","Majestically","Meaningfully","Mechanically",
+					 "Miserably","Mockingly","Mysteriously","Naturally","Neatly","Nicely","Oddly","Offensively","Officially",
+					 "Partially"];
+					 
+			var detail2 = ["Abandoned","Abnormal","Amusing","Ancient","Aromatic","Average","Beautiful","Bizarre","Classy","Clean",
+					 "Cold","Colorful","Creepy","Cute","Damaged","Dark","Defeated","Delicate","Delightful","Dirty",
+					 "Graceful","Hard","Harsh","Healthy","Heavy","Historical","Horrible","Important","Interesting",
+					 "Juvenile","Lacking","Lame","Large","Lavish","Lean","Less","Lethal","Lonely","Lovely","Macabre",
+					 "Remarkable","Rotten","Rough","Ruined","Rustic","Scary","Simple","Small","Smelly","Smooth","Soft",
+					 "Strong","Tranquil","Ugly","Valuable","Warlike","Warm","Watery","Weak","Young","Disagreeable",
+					 "Disgusting","Drab","Dry","Dull","Empty","Enormous","Exotic","Faded","Familiar","Fancy","Fat",
+					 "Feeble","Feminine","Festive","Flawless","Fresh","Full","Glorious","Good","Magnificent","Masculine",
+					 "Mature","Messy","Mighty","Military","Modern","Extravagant","Mundane","Mysterious","Natural",
+					 "Nondescript","Odd","Pale","Petite","Poor","Powerful","Quaint","Rare","Reassuring"];
+			
+			
+		  
+			function d(n){
+				return Math.floor(Math.random() * n) + 1;
+			}
+			
+			function fd(n){
+				return d(n) + ', ' + d(n) + ', ' + d(n) + ', ' + d(n);
+			}
+			
+			function f(ey, y, en, cf, fill = false){
+				var r = d(100);
+				var result = '';
+				if(r <= ey){
+					result = 'Y!';
+				} else if (r <= y){
+					result = 'Y';
+				} else if (r < en){
+					result = 'N';
+				} else {
+					result =  'N!';
+				}
+				if(r % 11 == 0 && r/11 <= cf){
+					if(fill){
+						return {text:result, decoration: 'underline', fillColor: '#d3d3d3'};
+					} else {
+						return {text:result, decoration: 'underline'};
+					}
+				}
+				if(fill){
+					return {text:result, fillColor: '#d3d3d3'};
+				} 
+				return result;
+			}
+			
+			function page(last){
+				return [
+					{
+						table: {
+							widths: [60, '*', 60, '*'],
+							body: [
+								['d4', fd(4), 'd6',fd(6)],
+								['d8', fd(8), 'd10',fd(10)],
+								['d12',fd(12), 'd20',fd(20)],
+							]
+						},
+					},
+					' ',
+					{
+						table: {
+							widths: ['*', 28, 28, 28, 28, 28,28, 28, 28, 28],
+							body: [
+								['Impossible', f(10,50,91,1), f(5,25,86,2), f(3,15,84,3), f(2,10,83,4), f(1,5,82,5,true), f(1,5,82,6), f(0,0,81, 7), f(0,0,81, 8), f(0,-20,77, 9)],
+								['No way', f(15,75,96,1), f(10,50,91,2), f(7,35,88,3), f(5,25,86,4), f(3,15,84,5,true), f(2,10,83,6), f(1,58,2,7), f(1,5,82,8),  f(0,0,81,9)],
+								['Very unlikely', f(16,85,97,1), f(13,65,94,2), f(10,50,91,3), f(9,45,90,4), f(5,25,86,5,true), f(3,15,84,6), f(2,10,83,7), f(1,5,82,8), f(1,5,82,9)],
+								['Unlikely', f(18,90,99,1), f(15,75,96,2), f(11,55,92,3), f(10,50,91,4), f(7,35,88,5, true), f(4,20,85,6), f(3,15,84,7), f(2,10,83,8), f(1,5,82,9)],
+								[{text:'50/50', fillColor: '#d3d3d3'},f(19,95,100,1,true), f(16,85,97,2, true),f(15,75,96,3,true),f(13,65,94,4,true),f(10,50,91,5,true), f(7,35,88,6,true), f(5,25,86,7,true), f(3,15,84,8, true),f(2,10,83, 9, true)],
+								['Somewhat likely', f(19,95,100,1), f(18,90,99,2), f(16,85,97,3), f(16,80,97,4), f(13,65,94,5,true), f(10,50,91,6), f(9,45,90,7), f(5,25,86,8), f(4,20,85,9)],
+								['Likely', f(20,100,0,1), f(19,95,100,2), f(18,90,99,3), f(16,85,97,4), f(15,75,96,5,true), f(11,55,92,6), f(10,50,91,7), f(7,35,88,8), f(5,25,86,9)],
+								['Very likely', f(21,105,0,1), f(19,95,100,2), f(19,95,100,3), f(18,90,99,4), f(16,85,97,5,true), f(15,75,96,6), f(13,65,94,7), f(10,50,91,8), f(9,45,90,9)],
+								['Near sure thing', f(23,115,0,1), f(20,100,0,2), f(19,95,100,3), f(19,95,100,4), f(18,90,99,5,true), f(16,80,97,6), f(15,75,96,7), f(11,55,92,8), f(10,50,91,9)],
+								['A sure thing', f(25,125,0,1), f(22,110,0,2), f(19,95,100,3), f(19,95,100,4), f(18,90,99,5,true), f(16,85,97,6), f(16,80,97,7), f(13,65,94,8), f(11,55,92,9)],
+								['Has to be', f(26,145,0,1), f(26,130,0,2), f(20,100,0,3), f(20,100,0,4), f(19,95,100,5,true), f(19,95,100,6), f(18,90,99,7), f(16,85,97,8), f(16,80,97,9)],
+								['Chaos','1','2','3', '4', {text:'5', fillColor: '#d3d3d3'},'6','7','8','9'],
+							]
+						},
+					},
+					' ',
+					alteredScene(),
+					' ',
+					focus() + ': ' + action1[Math.floor(Math.random()*action1.length)] + ' ' + action2[Math.floor(Math.random()*action2.length)],
+					' ',
+					{text: detail1[Math.floor(Math.random()*detail1.length)] + ' ' + detail2[Math.floor(Math.random()*detail2.length)], pageBreak: last},
+				];
+			}
+			
+			function getPages(n){
+				var r = [];
+				for(var i = 0; i < n; i++){
+					if(i == n - 1){
+						r = r.concat(page(''));
+					} else {
+						r = r.concat(page('after'));
+					}
+				}
+				return r;
+			}
+		  
+			function generate(n, callback){
+				var dd = {
+					content: getPages(n),
+					pageMargins: [5, 5, 5, 5 ],
+					defaultStyle: {
+						fontSize: 28,
+						alignment: 'center'
+					}
+				}
+				console.log('test');
+				pdfMake.createPdf(dd).getBlob(callback);
+			}
+			
+			var document = { 'createElementNS': function(){ return {} } };
+			var window = this;
+			
+			var self = this;
+			importScripts('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.60/pdfmake.min.js');
+			importScripts('https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.1.60/vfs_fonts.js');
+			self.onmessage = function(e) {
+			
+				new Promise(function (resolve, reject) {
+					generate(e.data, function (result) {
+					  if (result) { resolve(result); } else { reject(); }
+					});
+				  }).then(function (pdfBlob) {
+					postMessage({ pdfBlob });
+				  });
+			}
+		}
+		var dataObj = '(' + workerFunction + ')();'; 
+		var blob = new Blob([dataObj.replace('"use strict";', '')]);
+		var blobURL = (window.URL ? URL : webkitURL).createObjectURL(blob, {
+			type: 'application/javascript; charset=utf-8'
+		});
+		var worker = new Worker(blobURL);
+
+		function startGeneration(){
+			$('#generate').hide();
+			$('.loader').css('display', 'inline-block');
+			worker.postMessage($('#npages').val()); // Send data to our worker.
+		}
+
+		worker.onmessage = function(e) {
+			$('#generate').show();
+			$('.loader').hide();
+			
+			// Very hacky solution to automatically start file download
+			const anchor = document.createElement('a');
+			document.body.appendChild(anchor);
+			anchor.href = window.URL.createObjectURL(e.data.pdfBlob);
+			anchor.download = 'mythic_results.pdf';
+			anchor.click();
+		};
+	</script>
+</html>
